@@ -10,7 +10,7 @@ def client():
     with app.test_client() as client:
         yield client
 
-
+# GET - Todos os imóveis + atributos
 @patch("api.connect_db")  # Substitui-se a função que conecta ao banco por um Mock
 def test_get_imoveis(mock_connect_db, client):
     """Testa a rota /imoveis - deve retornar uma lista de imóveis."""
@@ -84,3 +84,35 @@ def test_get_imoveis(mock_connect_db, client):
     }
     assert response.get_json() == expected_response
 
+# GET - Imóvel por ID  com suas características concernentes
+@patch("api.connect_db")
+def test_get_imovel_por_id(mock_connect_db, client):
+    """Teste da rota /imoveis/<id> - que deve retornar um imóvel específico."""
+
+    # GIVEN/GEGEBEN 
+    mock_conn = MagicMock()
+    mock_cursor = MagicMock()
+    mock_conn.cursor.return_value = mock_cursor
+    mock_cursor.fetchone.return_value = (
+        1, 'Rua Nascimento Silva, 107', 'Rua', 'Ipanema', 
+        'Rio de Janeiro', '22421-025', 'Casa', 5000000.0, '1974-01-25'
+    )
+    mock_connect_db.return_value = mock_conn
+
+    # WHEN/WANN
+    response = client.get('/imoveis/1')
+
+    # THEN/DANN
+    assert response.status_code == 200
+    expected_response = {
+        'id': 1,
+        'logradouro': 'Rua Nascimento Silva, 107',
+        'tipo_logradouro': 'Rua',
+        'bairro': 'Ipanema',
+        'cidade': 'Rio de Janeiro',
+        'cep': '22421-025',
+        'tipo': 'Casa',
+        'valor': 5000000.0,
+        'data_aquisicao': '1974-01-25'
+    }
+    assert response.get_json() == expected_response

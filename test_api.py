@@ -159,3 +159,43 @@ def test_get_imovel_nao_encontrado(mock_connect_db, client):
         'erro': 'Imóvel não encontrado'
     }
     assert response.get_json() == expected_response
+    
+# POST - Adicionar um imóvel
+@patch("utils.connect_db")
+def test_post_adicionar_imovel(mock_connect_db, client):
+    """Testa a rota /imoveis para adicionar um novo imóvel"""
+    
+    # GIVEN/GEGEBEN
+    mock_conn = MagicMock()
+    mock_cursor = MagicMock()
+    mock_conn.cursor.return_value = mock_cursor
+    mock_cursor.lastrowid = 4  # ID do novo imóvel criado
+    mock_connect_db.return_value = mock_conn
+    novo_imovel = {
+        'logradouro': 'Rua Dr Getúlio Vargas, 308',
+        'tipo_logradouro': 'Rua',
+        'bairro': 'Centro',
+        'cidade': 'Ituverava',
+        'cep': '14500-000',
+        'tipo': 'Casa',
+        'valor': 1000000.0,
+        'data_aquisicao': '1968-02-15'
+    }
+
+    # WHEN/WANN
+    response = client.post('/imoveis', json=novo_imovel, content_type='application/json')
+
+    # THEN/DANN
+    assert response.status_code == 201
+    expected_response = {
+        'id': 4,
+        'logradouro': 'Rua Dr Getúlio Vargas, 308',
+        'tipo_logradouro': 'Rua',
+        'bairro': 'Centro',
+        'cidade': 'Ituverava',
+        'cep': '14500-000',
+        'tipo': 'Casa',
+        'valor': 1000000.0,
+        'data_aquisicao': '1968-02-15'
+    }
+    assert response.get_json() == expected_response

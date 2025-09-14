@@ -1,6 +1,7 @@
 import pytest
 from unittest.mock import patch, MagicMock
-from api import app, connect_db
+from api import app
+from utils import connect_db
 
 
 @pytest.fixture
@@ -11,7 +12,7 @@ def client():
         yield client
 
 # GET - Todos os imóveis + atributos
-@patch("api.connect_db")  # Substitui-se a função que conecta ao banco por um Mock
+@patch("utils.connect_db")  # Substitui-se a função que conecta ao banco por um Mock
 def test_get_imoveis(mock_connect_db, client):
     """Testa a rota /imoveis - deve retornar uma lista de imóveis."""
 
@@ -85,7 +86,7 @@ def test_get_imoveis(mock_connect_db, client):
 
 
  # GET - Quando não há imóveis no banco de dados
-@patch("api.connect_db")
+@patch("utils.connect_db")
 def test_get_imoveis_vazio(mock_connect_db, client):
     """Testa a rota /imoveis quando o banco de dados não tem imóveis."""
 
@@ -105,7 +106,7 @@ def test_get_imoveis_vazio(mock_connect_db, client):
     
     
 # GET - Imóvel por ID  com suas características concernentes
-@patch("api.connect_db")
+@patch("utils.connect_db")
 def test_get_imovel_por_id(mock_connect_db, client):
     """Teste da rota /imoveis/<id> - que deve retornar um imóvel específico."""
 
@@ -138,7 +139,7 @@ def test_get_imovel_por_id(mock_connect_db, client):
     assert response.get_json() == expected_response
  
  # GET - Imóvel por ID não encontrado (404)
-@patch("api.connect_db")
+@patch("utils.connect_db")
 def test_get_imovel_nao_encontrado(mock_connect_db, client):
     """Testa a rota /imoveis/<id> quando o imóvel não existe"""
 
@@ -155,6 +156,6 @@ def test_get_imovel_nao_encontrado(mock_connect_db, client):
     # THEN/DANN
     assert response.status_code == 404
     expected_response = {
-        'error': 'Imóvel não encontrado'
+        'erro': 'Imóvel não encontrado'
     }
     assert response.get_json() == expected_response

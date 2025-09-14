@@ -11,6 +11,11 @@ def get_imoveis():
     cursor = conn.cursor()
     results = cursor.fetchall()
     
+    # Banco de Dados vazio
+    if not results:
+        resp = {"erro": "Nenhum imóvel encontrado"}
+        return resp, 404
+    
     imoveis = []
     for row in results:
         imovel = {

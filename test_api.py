@@ -19,7 +19,6 @@ def test_get_imoveis(mock_connect_db, client):
     mock_conn = MagicMock()
     mock_cursor = MagicMock()
     mock_conn.cursor.return_value = mock_cursor
-
     mock_cursor.fetchall.return_value = [
         (0, 'Rua Inhambu, 97 ', 'Rua', 'Moema', 'São Paulo', '04520-010', 'Apartamento', 7000000.0, '2022-06-02'),
         (1, 'Rua Nascimento Silva, 107', 'Rua', 'Ipanema', 'Rio de Janeiro', '22421-025', 'Casa', 5000000.0, '1974-01-25'),
@@ -84,6 +83,27 @@ def test_get_imoveis(mock_connect_db, client):
     }
     assert response.get_json() == expected_response
 
+
+ # GET - Quando não há imóveis no banco de dados
+@patch("api.connect_db")
+def test_get_imoveis_vazio(mock_connect_db, client):
+    """Testa a rota /imoveis quando o banco de dados não tem imóveis."""
+
+    # GIVEN/GEGEBEN
+    mock_conn = MagicMock()
+    mock_cursor = MagicMock()
+    mock_conn.cursor.return_value = mock_cursor
+    mock_cursor.fetchall.return_value = []
+    mock_connect_db.return_value = mock_conn
+
+    # WHEN/WANN 
+    response = client.get('/imoveis')
+
+    # THEN/DANN 
+    assert response.status_code == 404
+    assert response.get_json() == {'erro': 'Nenhum imóvel encontrado'}
+    
+    
 # GET - Imóvel por ID  com suas características concernentes
 @patch("api.connect_db")
 def test_get_imovel_por_id(mock_connect_db, client):
@@ -116,3 +136,4 @@ def test_get_imovel_por_id(mock_connect_db, client):
         'data_aquisicao': '1974-01-25'
     }
     assert response.get_json() == expected_response
+ 

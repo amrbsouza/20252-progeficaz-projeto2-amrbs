@@ -27,3 +27,25 @@ def get_imoveis():
         imoveis.append(imovel)
     
     return jsonify({'imoveis': imoveis})
+
+@app.route('/imoveis/<int:imovel_id>', methods=['GET'])
+def get_imovel_por_id(imovel_id):
+    conn = connect_db()
+    cursor = conn.cursor()
+    result = cursor.fetchone()  
+    
+    if result:
+        imovel = {
+            'id': result[0],
+            'logradouro': result[1],
+            'tipo_logradouro': result[2],
+            'bairro': result[3],
+            'cidade': result[4],
+            'cep': result[5],
+            'tipo': result[6],
+            'valor': result[7],
+            'data_aquisicao': result[8]
+        }
+        return jsonify(imovel)
+    
+    return jsonify({'error': 'Imóvel não encontrado'}), 404

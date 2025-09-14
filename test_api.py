@@ -137,3 +137,24 @@ def test_get_imovel_por_id(mock_connect_db, client):
     }
     assert response.get_json() == expected_response
  
+ # GET - Imóvel por ID não encontrado (404)
+@patch("api.connect_db")
+def test_get_imovel_nao_encontrado(mock_connect_db, client):
+    """Testa a rota /imoveis/<id> quando o imóvel não existe"""
+
+    # GIVEN 
+    mock_conn = MagicMock()
+    mock_cursor = MagicMock()
+    mock_conn.cursor.return_value = mock_cursor
+    mock_cursor.fetchone.return_value = None
+    mock_connect_db.return_value = mock_conn
+
+    # WHEN/WANN
+    response = client.get('/imoveis/99999999999')
+
+    # THEN/DANN
+    assert response.status_code == 404
+    expected_response = {
+        'error': 'Imóvel não encontrado'
+    }
+    assert response.get_json() == expected_response

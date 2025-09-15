@@ -138,12 +138,12 @@ def test_get_imovel_por_id(mock_connect_db, client):
     }
     assert response.get_json() == expected_response
  
- # GET - Imóvel por ID não encontrado (404)
+ # GET - Imóvel por ID não encontrado 
 @patch("utils.connect_db")
 def test_get_imovel_nao_encontrado(mock_connect_db, client):
     """Testa a rota /imoveis/<id> quando o imóvel não existe"""
 
-    # GIVEN 
+    # GIVEN/GEGEBEN
     mock_conn = MagicMock()
     mock_cursor = MagicMock()
     mock_conn.cursor.return_value = mock_cursor
@@ -199,3 +199,66 @@ def test_post_adicionar_imovel(mock_connect_db, client):
         'data_aquisicao': '1968-02-15'
     }
     assert response.get_json() == expected_response
+
+# PUT - Atualiza um imóvel que já existe 
+@patch("utils.connect_db")
+def test_put_atualizar_imovel(mock_connect_db, client):
+    """Testa a atualização de um imóvel existente pela rota /imoveis/<id>"""
+    
+    # GIVEN/GEGEBEN
+    mock_conn = MagicMock()
+    mock_cursor = MagicMock()
+    mock_conn.cursor.return_value = mock_cursor
+    mock_cursor.fetchone.return_value = (
+        1, 'Rua Nascimento Silva, 107', 'Rua', 'Ipanema', 
+        'Rio de Janeiro', '22421-025', 'Casa', 5000000.0, '1974-01-25'
+    )
+    mock_cursor.rowcount = 1
+    mock_connect_db.return_value = mock_conn
+    dados_atualizados = {
+        'logradouro': 'Rua Nascimento Silva, 107',
+        'tipo_logradouro': 'Rua',
+        'bairro': 'Ipanema',
+        'cidade': 'Rio de Janeiro',
+        'cep': '22421-025',
+        'tipo': 'Casa',
+        'valor': 13000000.0,  
+        'data_aquisicao': '1974-01-25'
+    }
+    
+    # WHEN/WANN
+    response = client.put('/imoveis/1', json=dados_atualizados)
+    
+    # THEN/DANN
+    assert response.status_code == 200
+    expected_response = {
+        'id': 1,
+        'logradouro': 'Rua Nascimento Silva, 107',
+        'tipo_logradouro': 'Rua',
+        'bairro': 'Ipanema',
+        'cidade': 'Rio de Janeiro',
+        'cep': '22421-025',
+        'tipo': 'Casa',
+        'valor': 13000000.0,
+        'data_aquisicao': '1974-01-25'
+    }
+    assert response.get_json() == expected_response
+
+# PUT - Atualiza um imóvel inexistente 
+@patch("utils.connect_db")
+def test_put_atualizar_imovel_inexistente(mock_connect_db, client):
+    """Testa atualização de um imóvel inexistente""" 
+    
+    # GIVEN/GEGEBEN
+    mock_conn = MagicMock()
+    mock_cursor = MagicMock()
+    mock_conn.cursor.return_value = mock_cursor
+    mock_cursor.rowcount = 0  
+    mock_connect_db.return_value = mock_conn
+    
+    # WHEN/WANN
+    response = client.put('/imoveis/99999', json={'valor': 100000})
+    
+    # THEN/DANN
+    assert response.status_code == 404
+    assert response.get_json() == {'erro': 'Imóvel não encontrado'}

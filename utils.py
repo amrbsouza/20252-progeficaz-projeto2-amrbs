@@ -78,3 +78,10 @@ def atualizar_imovel_db(imovel_id, dados):
         (dados['logradouro'], dados['tipo_logradouro'], dados['bairro'], dados['cidade'], dados['cep'], dados['tipo'], dados['valor'], dados['data_aquisicao'], imovel_id))
     conn.commit()
     return cursor.rowcount  
+
+def remover_imovel_db(imovel_id):
+    conn = connect_db()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM imoveis WHERE id = ?", (imovel_id,))
+    conn.commit()
+    return cursor.rowcount 

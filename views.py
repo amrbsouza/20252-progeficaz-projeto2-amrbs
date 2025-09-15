@@ -1,5 +1,5 @@
 from flask import jsonify, request
-from utils import get_imoveis, get_imovel_por_id, adicionar_imovel_db, atualizar_imovel_db
+from utils import get_imoveis, get_imovel_por_id, adicionar_imovel_db, atualizar_imovel_db, remover_imovel_db
 
 def listar_imoveis():
     """GET /imoveis - Lista todos os imóveis"""
@@ -43,4 +43,11 @@ def atualizar_imovel(imovel_id):
         response['id'] = imovel_id
         return jsonify(response), 200
     
+    return jsonify({'erro': 'Imóvel não encontrado'}), 404
+
+def remover_imovel(imovel_id):
+    """DELETE /imoveis/<id> - Remove um imóvel existente"""
+    linhas_afetadas = remover_imovel_db(imovel_id)
+    if linhas_afetadas > 0:
+        return '', 204  
     return jsonify({'erro': 'Imóvel não encontrado'}), 404

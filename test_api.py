@@ -303,7 +303,7 @@ def test_delete_remove_imovel_inexistente(mock_connect_db, client):
     mock_conn = MagicMock()
     mock_cursor = MagicMock()
     mock_conn.cursor.return_value = mock_cursor
-    mock_cursor.fetchone.return_value = None
+    mock_cursor.rowcount = 0
     mock_connect_db.return_value = mock_conn
     
     # WHEN/WANN

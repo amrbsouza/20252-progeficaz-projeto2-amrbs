@@ -66,3 +66,15 @@ def adicionar_imovel_db(dados):
     ))
     conn.commit()
     return cursor.lastrowid
+
+def atualizar_imovel_db(imovel_id, dados):
+    conn = connect_db()
+    cursor = conn.cursor()
+    cursor.execute("""
+        UPDATE imoveis 
+        SET logradouro=?, tipo_logradouro=?, bairro=?, cidade=?, 
+            cep=?, tipo=?, valor=?, data_aquisicao=?
+        WHERE id=?""", 
+        (dados['logradouro'], dados['tipo_logradouro'], dados['bairro'], dados['cidade'], dados['cep'], dados['tipo'], dados['valor'], dados['data_aquisicao'], imovel_id))
+    conn.commit()
+    return cursor.rowcount  

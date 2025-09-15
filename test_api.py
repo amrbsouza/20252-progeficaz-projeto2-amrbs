@@ -256,8 +256,19 @@ def test_put_atualizar_imovel_inexistente(mock_connect_db, client):
     mock_cursor.rowcount = 0  
     mock_connect_db.return_value = mock_conn
     
+    dados_atualizados = {
+        'logradouro': 'Rua Pindamonhangaba, 13',
+        'tipo_logradouro': 'Rua',
+        'bairro': 'Centro',
+        'cidade': 'Pindamonhangaba',
+        'cep': '13450-000',
+        'tipo': 'Casa',
+        'valor': 50.0,
+        'data_aquisicao': '1989-12-13'
+    }
+    
     # WHEN/WANN
-    response = client.put('/imoveis/99999', json={'valor': 100000})
+    response = client.put('/imoveis/99999', json=dados_atualizados)
     
     # THEN/DANN
     assert response.status_code == 404

@@ -273,3 +273,44 @@ def test_put_atualizar_imovel_inexistente(mock_connect_db, client):
     # THEN/DANN
     assert response.status_code == 404
     assert response.get_json() == {'erro': 'Imóvel não encontrado'}
+    
+# DELETE - Deleta um ímovel 
+@patch("utils.connect_db")
+def test_delete_remove_imovel(mock_connect_db, client):
+    # GIVEN/GEGEBEN
+    mock_conn = MagicMock()
+    mock_cursor = MagicMock()
+    mock_conn.cursor.return_value = mock_cursor
+    mock_cursor.fetchone.return_value = (
+        5, 'Rua Oscar Freire, 103', 'Rua', 'Cerqueira César', 
+        'São Paulo', '01426-000', 'Apartamento', 15000000.0, '2006-06-10'
+    )
+    mock_cursor.rowcount = 1
+    mock_connect_db.return_value = mock_conn
+    
+    # WHEN/WANN
+    response = client.delete('/imoveis/5')
+    
+    # THEN/DANN
+    assert response.status_code == 204
+    assert response.data == b''
+    
+# DELETE - Deleta um imóvel inexistente
+@patch("utils.connect_db")
+def test_delete_remove_imovel_inexistente(mock_connect_db, client):
+    
+    # GIVEN/GEGEBEN
+    mock_conn = MagicMock()
+    mock_cursor = MagicMock()
+    mock_conn.cursor.return_value = mock_cursor
+    mock_cursor.fetchone.return_value = None
+    mock_connect_db.return_value = mock_conn
+    
+    # WHEN/WANN
+    response = client.delete('/imoveis/1989999999')
+    
+    # THEN/DANN
+    assert response.status_code == 404
+    assert response.get_json() == {'erro': 'Imóvel não encontrado'}
+    
+    

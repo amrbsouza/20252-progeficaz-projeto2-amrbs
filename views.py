@@ -1,5 +1,5 @@
-from flask import jsonify
-from utils import get_imoveis, get_imovel_por_id
+from flask import jsonify, request
+from utils import get_imoveis, get_imovel_por_id,  adicionar_imovel_db
 
 def listar_imoveis():
     """GET /imoveis - Lista todos os imóveis"""
@@ -18,3 +18,15 @@ def buscar_imovel_por_id(imovel_id):
         return jsonify(imovel)
     
     return jsonify({'erro': 'Imóvel não encontrado'}), 404
+
+def adicionar_imovel():
+    """POST /imoveis - Adiciona um novo imóvel"""
+    dados = request.get_json()
+    if not dados:
+        return jsonify({'erro': 'Dados não fornecidos'}), 400
+    novo_id = adicionar_imovel_db(dados)
+    
+    response = dados.copy()
+    response['id'] = novo_id
+    
+    return jsonify(response), 201

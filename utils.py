@@ -47,3 +47,22 @@ def get_imovel_por_id(imovel_id):
         }
     
     return None
+
+def adicionar_imovel_db(dados):
+    conn = connect_db()
+    cursor = conn.cursor()
+    cursor.execute("""
+        INSERT INTO imoveis (logradouro, tipo_logradouro, bairro, cidade, cep, tipo, valor, data_aquisicao) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    """, (
+        dados['logradouro'],
+        dados['tipo_logradouro'], 
+        dados['bairro'],
+        dados['cidade'],
+        dados['cep'],
+        dados['tipo'],
+        dados['valor'],
+        dados['data_aquisicao']
+    ))
+    conn.commit()
+    return cursor.lastrowid

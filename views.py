@@ -3,7 +3,9 @@ from utils import get_imoveis, get_imovel_por_id, adicionar_imovel_db, atualizar
 
 def listar_imoveis():
     """GET /imoveis - Lista todos os imóveis"""
-    imoveis = get_imoveis()
+    cidade = request.args.get('cidade')
+    tipo = request.args.get('tipo')
+    imoveis = get_imoveis(cidade=cidade, tipo=tipo)
     
     if not imoveis:
         return {"erro": "Nenhum imóvel encontrado"}, 404

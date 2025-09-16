@@ -1,10 +1,18 @@
 def connect_db():
     pass
 
-def get_imoveis():
+def get_imoveis(cidade=None, tipo=None):
     conn = connect_db()
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM imoveis")
+    
+    if cidade and tipo:
+        cursor.execute("SELECT * FROM imoveis WHERE cidade = ? AND tipo = ?", (cidade, tipo))
+    elif cidade:
+        cursor.execute("SELECT * FROM imoveis WHERE cidade = ?", (cidade,))
+    elif tipo:
+        cursor.execute("SELECT * FROM imoveis WHERE tipo = ?", (tipo,))
+    else:
+        cursor.execute("SELECT * FROM imoveis")
     results = cursor.fetchall()
     
     if not results:

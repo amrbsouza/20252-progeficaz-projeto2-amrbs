@@ -32,11 +32,11 @@ def get_imoveis(cidade=None, tipo=None):
     cursor = conn.cursor()
     
     if cidade and tipo:
-        cursor.execute("SELECT * FROM imoveis WHERE cidade = ? AND tipo = ?", (cidade, tipo))
+        cursor.execute("SELECT * FROM imoveis WHERE cidade = %s AND tipo = %s", (cidade, tipo))
     elif cidade:
-        cursor.execute("SELECT * FROM imoveis WHERE cidade = ?", (cidade,))
+        cursor.execute("SELECT * FROM imoveis WHERE cidade = %s", (cidade,))
     elif tipo:
-        cursor.execute("SELECT * FROM imoveis WHERE tipo = ?", (tipo,))
+        cursor.execute("SELECT * FROM imoveis WHERE tipo = %s", (tipo,))
     else:
         cursor.execute("SELECT * FROM imoveis")
     results = cursor.fetchall()
@@ -64,7 +64,7 @@ def get_imoveis(cidade=None, tipo=None):
 def get_imovel_por_id(imovel_id):
     conn = connect_db()
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM imoveis WHERE id = ?", (imovel_id,))
+    cursor.execute("SELECT * FROM imoveis WHERE id = %s", (imovel_id,))
     result = cursor.fetchone()
     
     if result:
@@ -87,7 +87,7 @@ def adicionar_imovel_db(dados):
     cursor = conn.cursor()
     cursor.execute("""
         INSERT INTO imoveis (logradouro, tipo_logradouro, bairro, cidade, cep, tipo, valor, data_aquisicao) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
     """, (
         dados['logradouro'],
         dados['tipo_logradouro'], 
@@ -106,9 +106,9 @@ def atualizar_imovel_db(imovel_id, dados):
     cursor = conn.cursor()
     cursor.execute("""
         UPDATE imoveis 
-        SET logradouro=?, tipo_logradouro=?, bairro=?, cidade=?, 
-            cep=?, tipo=?, valor=?, data_aquisicao=?
-        WHERE id=?""", 
+        SET logradouro=%s, tipo_logradouro=%s, bairro=%s, cidade=%s, 
+            cep=%s, tipo=%s, valor=%s, data_aquisicao=%s
+        WHERE id=%s""", 
         (dados['logradouro'], dados['tipo_logradouro'], dados['bairro'], dados['cidade'], dados['cep'], dados['tipo'], dados['valor'], dados['data_aquisicao'], imovel_id))
     conn.commit()
     return cursor.rowcount  
@@ -116,6 +116,6 @@ def atualizar_imovel_db(imovel_id, dados):
 def remover_imovel_db(imovel_id):
     conn = connect_db()
     cursor = conn.cursor()
-    cursor.execute("DELETE FROM imoveis WHERE id = ?", (imovel_id,))
+    cursor.execute("DELETE FROM imoveis WHERE id = %s", (imovel_id,))
     conn.commit()
     return cursor.rowcount 

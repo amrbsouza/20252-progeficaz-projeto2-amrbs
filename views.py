@@ -53,3 +53,21 @@ def remover_imovel(imovel_id):
     if linhas_afetadas > 0:
         return '', 204  
     return jsonify({'erro': 'Imóvel não encontrado'}), 404
+
+def listar_imoveis_por_tipo(tipo):
+    """GET /imoveis/tipo/<tipo> - rota para imóveis por tipo específico"""
+    imoveis = get_imoveis(tipo=tipo)
+    
+    if not imoveis:
+        return {"erro": "Nenhum imóvel encontrado"}, 404
+    
+    return jsonify({'imoveis': imoveis})
+
+def listar_imoveis_por_cidade(cidade):
+    """GET /imoveis/cidade/<cidade> - rota para imóveis por cidade específica"""
+    imoveis = get_imoveis(cidade=cidade)
+    
+    if not imoveis:
+        return {"erro": "Nenhum imóvel encontrado"}, 404
+    
+    return jsonify({'imoveis': imoveis})

@@ -11,6 +11,14 @@ def get_imoveis():
 def get_imovel_por_id(imovel_id):
     return views.buscar_imovel_por_id(imovel_id)
 
+@app.route('/imoveis/tipo/<string:tipo>', methods=['GET'])
+def get_imoveis_por_tipo(tipo):
+    return views.listar_imoveis_por_tipo(tipo)
+
+@app.route('/imoveis/cidade/<string:cidade>', methods=['GET'])  
+def get_imoveis_por_cidade(cidade):
+    return views.listar_imoveis_por_cidade(cidade)
+
 @app.route('/imoveis', methods=['POST'])
 def post_imovel():
     return views.adicionar_imovel()

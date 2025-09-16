@@ -313,4 +313,56 @@ def test_delete_remove_imovel_inexistente(mock_connect_db, client):
     assert response.status_code == 404
     assert response.get_json() == {'erro': 'Imóvel não encontrado'}
     
+# GET - Filtro por tipo de imóvel e cidade    
+@patch("utils.connect_db")
+def test_get_imoveis_filtro_tipo(mock_connect_db, client):
+    """Testa filtro por tipo"""
     
+    # GIVEN/GEGEBEN
+    mock_conn = MagicMock()
+    mock_cursor = MagicMock()
+    mock_conn.cursor.return_value = mock_cursor
+    mock_cursor.fetchall.return_value = [
+        (1, 'Rua Nascimento Silva, 107', 'Rua', 'Ipanema', 'Rio de Janeiro', '22421-025', 'Casa', 5000000.0, '1974-01-25')
+    ]
+    mock_connect_db.return_value = mock_conn
+    
+    # WHEN/WANN
+    response = client.get('/imoveis?tipo=Casa')
+    
+    # THEN/DANN
+    assert response.status_code == 200
+    assert len(response.get_json()['imoveis']) == 1
+    assert response.get_json()['imoveis'][0]['tipo'] == 'Casa'
+    mock_cursor.execute.assert_called_with(
+        "SELECT * FROM imoveis WHERE tipo = ?", 
+        ("Casa",)
+    )
+
+@patch("utils.connect_db")
+def test_get_imoveis_filtro_cidade(mock_connect_db, client):
+    """Testa filtro por cidade"""
+
+    # GIVEN/GEGEBEN
+    mock_conn = MagicMock()
+    mock_cursor = MagicMock()
+    mock_conn.cursor.return_value = mock_cursor
+    mock_cursor.fetchall.return_value = [
+        (0, 'Rua Inhambu, 97 ', 'Rua', 'Moema', 'São Paulo', '04520-010', 'Apartamento', 7000000.0, '2022-06-02'),
+        (3, 'Avenida Braz Leme, 1981', 'Avenida', 'Santana', 'São Paulo', '02022-010', 'Apartamento', 1800000.0, '2014-10-27')
+    ]
+    mock_connect_db.return_value = mock_conn
+    
+    # WHEN/WANN
+    response = client.get('/imoveis?cidade=São Paulo')
+    
+    # THEN/DANN
+    assert response.status_code == 200
+    assert len(response.get_json()['imoveis']) == 2
+    assert response.get_json()['imoveis'][0]['cidade'] == 'São Paulo'
+    assert response.get_json()['imoveis'][1]['cidade'] == 'São Paulo'
+    mock_cursor.execute.assert_called_with(
+        "SELECT * FROM imoveis WHERE cidade = ?", 
+        ("São Paulo",)
+    )
+

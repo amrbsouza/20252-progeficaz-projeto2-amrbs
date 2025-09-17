@@ -54,10 +54,8 @@ def test_get_imoveis(mock_connect_db, client):
         assert '_links' in imovel  
  
     collection_links = response_data['_links']
-    assert any(link.get('rel') == 'self' for link in collection_links)
-    assert any(link.get('rel') == 'create' for link in collection_links)
-    
-
+    assert 'self' in collection_links
+    assert 'create' in collection_links
 
  # GET - Quando não há imóveis no banco de dados
 @patch("utils.connect_db")

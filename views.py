@@ -1,5 +1,5 @@
 from flask import jsonify, request
-from utils import get_imoveis, get_imovel_por_id, adicionar_imovel_db, atualizar_imovel_db, remover_imovel_db
+from utils import get_imoveis, get_imovel_por_id, adicionar_imovel_db, atualizar_imovel_db, remover_imovel_db, adiciona_hateoas_link, adiciona_hateoas_em_lista
 
 def listar_imoveis():
     """GET /imoveis - Lista todos os imóveis"""
@@ -10,14 +10,16 @@ def listar_imoveis():
     if not imoveis:
         return {"erro": "Nenhum imóvel encontrado"}, 404
     
-    return jsonify({'imoveis': imoveis})
+    result = adiciona_hateoas_em_lista(imoveis)
+    return jsonify(result)
 
 def buscar_imovel_por_id(imovel_id):
     """GET /imoveis/<id> - Busca imóvel por ID"""
     imovel = get_imovel_por_id(imovel_id)
     
     if imovel:
-        return jsonify(imovel)
+        imovel_com_links = adiciona_hateoas_link(imovel)
+        return jsonify(imovel_com_links)
     
     return jsonify({'erro': 'Imóvel não encontrado'}), 404
 
@@ -31,7 +33,8 @@ def adicionar_imovel():
     response = dados.copy()
     response['id'] = novo_id
     
-    return jsonify(response), 201
+    response_com_links = adiciona_hateoas_link(response)
+    return jsonify(response_com_links), 201
 
 def atualizar_imovel(imovel_id):
     """PUT /imoveis/<id> - Atualiza um imóvel existente"""
@@ -43,7 +46,9 @@ def atualizar_imovel(imovel_id):
     if linhas_afetadas > 0:
         response = dados.copy()
         response['id'] = imovel_id
-        return jsonify(response), 200
+        
+        response_com_links = adiciona_hateoas_link(response)
+        return jsonify(response_com_links), 200
     
     return jsonify({'erro': 'Imóvel não encontrado'}), 404
 
@@ -61,7 +66,9 @@ def listar_imoveis_por_tipo(tipo):
     if not imoveis:
         return {"erro": "Nenhum imóvel encontrado"}, 404
     
-    return jsonify({'imoveis': imoveis})
+    result = adiciona_hateoas_em_lista(imoveis)
+    result['_links']['self'] = f'/imoveis/tipo/{tipo}'
+    return jsonify(result)
 
 def listar_imoveis_por_cidade(cidade):
     """GET /imoveis/cidade/<cidade> - rota para imóveis por cidade específica"""
@@ -70,4 +77,6 @@ def listar_imoveis_por_cidade(cidade):
     if not imoveis:
         return {"erro": "Nenhum imóvel encontrado"}, 404
     
-    return jsonify({'imoveis': imoveis})
+    result = adiciona_hateoas_em_lista(imoveis)
+    result['_links']['self'] = f'/imoveis/cidade/{cidade}'
+    return jsonify(result)

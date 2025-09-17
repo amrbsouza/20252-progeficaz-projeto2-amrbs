@@ -42,6 +42,8 @@ def get_imoveis(cidade=None, tipo=None):
     results = cursor.fetchall()
     
     if not results:
+        cursor.close()
+        conn.close()
         return None
     
     imoveis = []
@@ -58,7 +60,9 @@ def get_imoveis(cidade=None, tipo=None):
             'data_aquisicao': row[8]
         }
         imoveis.append(imovel)
-    
+     
+    cursor.close()
+    conn.close()
     return imoveis
 
 def get_imovel_por_id(imovel_id):
@@ -68,7 +72,7 @@ def get_imovel_por_id(imovel_id):
     result = cursor.fetchone()
     
     if result:
-        return {
+        imovel = {
             'id': result[0],
             'logradouro': result[1],
             'tipo_logradouro': result[2],
@@ -79,7 +83,12 @@ def get_imovel_por_id(imovel_id):
             'valor': result[7],
             'data_aquisicao': result[8]
         }
+        cursor.close()
+        conn.close()
+        return imovel
     
+    cursor.close()
+    conn.close()
     return None
 
 def adicionar_imovel_db(dados):
@@ -99,7 +108,11 @@ def adicionar_imovel_db(dados):
         dados['data_aquisicao']
     ))
     conn.commit()
-    return cursor.lastrowid
+    novo_id = cursor.lastrowid
+    
+    cursor.close()
+    conn.close()
+    return novo_id
 
 def atualizar_imovel_db(imovel_id, dados):
     conn = connect_db()
@@ -111,11 +124,43 @@ def atualizar_imovel_db(imovel_id, dados):
         WHERE id=%s""", 
         (dados['logradouro'], dados['tipo_logradouro'], dados['bairro'], dados['cidade'], dados['cep'], dados['tipo'], dados['valor'], dados['data_aquisicao'], imovel_id))
     conn.commit()
-    return cursor.rowcount  
+    linhas_alteradas = cursor.rowcount
+    
+    cursor.close()
+    conn.close()
+    return linhas_alteradas
 
 def remover_imovel_db(imovel_id):
     conn = connect_db()
     cursor = conn.cursor()
     cursor.execute("DELETE FROM imoveis WHERE id = %s", (imovel_id,))
     conn.commit()
-    return cursor.rowcount 
+    linhas_excluidas = cursor.rowcount
+    
+    cursor.close()
+    conn.close()
+    return linhas_excluidas
+
+def adiciona_hateoas_link(imovel):
+    """Adiciona link HATEOAS para um imóvel"""
+    imovel_id = imovel['id']
+    imovel['_links'] = {
+        'self': f'/imoveis/{imovel_id}',
+        'update': f'/imoveis/{imovel_id}',
+        'delete': f'/imoveis/{imovel_id}',
+        'all': '/imoveis',
+        'by_type': f"/imoveis/tipo/{imovel['tipo']}",
+        'by_city': f"/imoveis/cidade/{imovel['cidade']}"
+    }
+    return imovel
+
+def adiciona_hateoas_em_lista(imoveis_list):
+    """Adiciona links HATEOAS para uma coleção de imóveis"""
+    result = {
+        'imoveis': [adiciona_hateoas_link(imovel) for imovel in imoveis_list],
+        '_links': {
+            'self': '/imoveis',
+            'create': '/imoveis'
+        }
+    }
+    return result

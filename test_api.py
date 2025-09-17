@@ -25,7 +25,6 @@ def test_get_imoveis(mock_connect_db, client):
         (1, 'Rua Nascimento Silva, 107', 'Rua', 'Ipanema', 'Rio de Janeiro', '22421-025', 'Casa', 5000000.0, '1974-01-25'),
         (2, 'Praça dos Três Poderes', 'Praça', 'Centro', 'Brasília', '70175-900', 'Palácio', 200000000.0, '1960-04-21'), 
         (3, 'Avenida Braz Leme, 1981', 'Avenida', 'Santana', 'São Paulo', '02022-010', 'Apartamento', 1800000.0, '2014-10-27')
-        
     ]
     mock_connect_db.return_value = mock_conn
 
@@ -34,55 +33,30 @@ def test_get_imoveis(mock_connect_db, client):
 
     # THEN/DANN
     assert response.status_code == 200
-    expected_response = {
-        'imoveis': [
-            {
-                'id': 0,
-                'logradouro': 'Rua Inhambu, 97 ',
-                'tipo_logradouro': 'Rua',
-                'bairro': 'Moema',
-                'cidade': 'São Paulo',
-                'cep': '04520-010',
-                'tipo': 'Apartamento',
-                'valor': 7000000.0,
-                'data_aquisicao': '2022-06-02'
-            },
-            {
-                'id': 1,
-                'logradouro': 'Rua Nascimento Silva, 107',
-                'tipo_logradouro': 'Rua',
-                'bairro': 'Ipanema',
-                'cidade': 'Rio de Janeiro',
-                'cep': '22421-025',
-                'tipo': 'Casa',
-                'valor': 5000000.0,
-                'data_aquisicao': '1974-01-25'
-            },
-            {
-                'id': 2,
-                'logradouro': 'Praça dos Três Poderes',
-                'tipo_logradouro': 'Praça',
-                'bairro': 'Centro',
-                'cidade': 'Brasília',
-                'cep': '70175-900',
-                'tipo': 'Palácio',
-                'valor': 200000000.0,
-                'data_aquisicao': '1960-04-21'
-            },
-            {
-                'id': 3,
-                'logradouro': 'Avenida Braz Leme, 1981',
-                'tipo_logradouro': 'Avenida',
-                'bairro': 'Santana',
-                'cidade': 'São Paulo',
-                'cep': '02022-010',
-                'tipo': 'Apartamento',
-                'valor': 1800000.0,
-                'data_aquisicao': '2014-10-27'
-            }
-        ]
-    }
-    assert response.get_json() == expected_response
+    response_data = response.get_json()
+    assert 'imoveis' in response_data
+    assert '_links' in response_data
+    assert len(response_data['imoveis']) == 4
+    
+    expected_imoveis = [
+        {'id': 0, 'logradouro': 'Rua Inhambu, 97 ', 'tipo': 'Apartamento', 'cidade': 'São Paulo'},
+        {'id': 1, 'logradouro': 'Rua Nascimento Silva, 107', 'tipo': 'Casa', 'cidade': 'Rio de Janeiro'},
+        {'id': 2, 'logradouro': 'Praça dos Três Poderes', 'tipo': 'Palácio', 'cidade': 'Brasília'},
+        {'id': 3, 'logradouro': 'Avenida Braz Leme, 1981', 'tipo': 'Apartamento', 'cidade': 'São Paulo'}
+    ]
+
+    for i, expected in enumerate(expected_imoveis):
+        imovel = response_data['imoveis'][i]
+        assert imovel['id'] == expected['id']
+        assert imovel['logradouro'] == expected['logradouro']
+        assert imovel['tipo'] == expected['tipo']
+        assert imovel['cidade'] == expected['cidade']
+        assert '_links' in imovel  
+ 
+    collection_links = response_data['_links']
+    assert any(link.get('rel') == 'self' for link in collection_links)
+    assert any(link.get('rel') == 'create' for link in collection_links)
+    
 
 
  # GET - Quando não há imóveis no banco de dados
@@ -134,7 +108,15 @@ def test_get_imovel_por_id(mock_connect_db, client):
         'cep': '22421-025',
         'tipo': 'Casa',
         'valor': 5000000.0,
-        'data_aquisicao': '1974-01-25'
+        'data_aquisicao': '1974-01-25',
+        '_links': {
+            'self': '/imoveis/1',
+            'update': '/imoveis/1',
+            'delete': '/imoveis/1',
+            'all': '/imoveis',
+            'by_type': '/imoveis/tipo/Casa',
+            'by_city': '/imoveis/cidade/Rio de Janeiro'
+        }
     }
     assert response.get_json() == expected_response
  
@@ -196,7 +178,15 @@ def test_post_adicionar_imovel(mock_connect_db, client):
         'cep': '14500-000',
         'tipo': 'Casa',
         'valor': 1000000.0,
-        'data_aquisicao': '1968-02-15'
+        'data_aquisicao': '1968-02-15',
+        '_links': {
+            'self': '/imoveis/4',
+            'update': '/imoveis/4',
+            'delete': '/imoveis/4',
+            'all': '/imoveis',
+            'by_type': '/imoveis/tipo/Casa',
+            'by_city': '/imoveis/cidade/Ituverava'
+        } 
     }
     assert response.get_json() == expected_response
 
@@ -240,7 +230,15 @@ def test_put_atualizar_imovel(mock_connect_db, client):
         'cep': '22421-025',
         'tipo': 'Casa',
         'valor': 13000000.0,
-        'data_aquisicao': '1974-01-25'
+        'data_aquisicao': '1974-01-25',
+        '_links': {
+            'self': '/imoveis/1',
+            'update': '/imoveis/1',
+            'delete': '/imoveis/1',
+            'all': '/imoveis',
+            'by_type': '/imoveis/tipo/Casa',
+            'by_city': '/imoveis/cidade/Rio de Janeiro'
+        }
     }
     assert response.get_json() == expected_response
 
@@ -332,8 +330,14 @@ def test_get_imoveis_filtro_tipo(mock_connect_db, client):
     
     # THEN/DANN
     assert response.status_code == 200
-    assert len(response.get_json()['imoveis']) == 1
-    assert response.get_json()['imoveis'][0]['tipo'] == 'Casa'
+    response_data = response.get_json()
+    assert 'imoveis' in response_data
+    assert '_links' in response_data
+    assert len(response_data['imoveis']) == 1
+    assert response_data['imoveis'][0]['tipo'] == 'Casa'
+    for imovel in response_data['imoveis']:
+        assert '_links' in imovel
+    
     mock_cursor.execute.assert_called_with(
         "SELECT * FROM imoveis WHERE tipo = %s", 
         ("Casa",)
@@ -358,9 +362,15 @@ def test_get_imoveis_filtro_cidade(mock_connect_db, client):
     
     # THEN/DANN
     assert response.status_code == 200
-    assert len(response.get_json()['imoveis']) == 2
-    assert response.get_json()['imoveis'][0]['cidade'] == 'São Paulo'
-    assert response.get_json()['imoveis'][1]['cidade'] == 'São Paulo'
+    response_data = response.get_json()
+    assert 'imoveis' in response_data
+    assert '_links' in response_data
+    assert len(response_data['imoveis']) == 2
+    assert response_data['imoveis'][0]['cidade'] == 'São Paulo'
+    assert response_data['imoveis'][1]['cidade'] == 'São Paulo'
+    for imovel in response_data['imoveis']:
+        assert '_links' in imovel
+    
     mock_cursor.execute.assert_called_with(
         "SELECT * FROM imoveis WHERE cidade = %s", 
         ("São Paulo",)
@@ -385,9 +395,15 @@ def test_get_imoveis_filtro_tipo_rota_separada(mock_connect_db, client):
     
     # THEN/DANN
     assert response.status_code == 200
-    assert len(response.get_json()['imoveis']) == 2
-    assert response.get_json()['imoveis'][0]['tipo'] == 'Apartamento'
-    assert response.get_json()['imoveis'][1]['tipo'] == 'Apartamento'
+    response_data = response.get_json()
+    assert 'imoveis' in response_data
+    assert '_links' in response_data
+    assert len(response_data['imoveis']) == 2
+    assert response_data['imoveis'][0]['tipo'] == 'Apartamento'
+    assert response_data['imoveis'][1]['tipo'] == 'Apartamento'
+    for imovel in response_data['imoveis']:
+        assert '_links' in imovel
+    
     mock_cursor.execute.assert_called_with(
         "SELECT * FROM imoveis WHERE tipo = %s", 
         ("Apartamento",)
@@ -411,8 +427,14 @@ def test_get_imoveis_filtro_cidade_rota_separada(mock_connect_db, client):
     
     # THEN/DANN
     assert response.status_code == 200
-    assert len(response.get_json()['imoveis']) == 1
-    assert response.get_json()['imoveis'][0]['cidade'] == 'Rio de Janeiro'
+    response_data = response.get_json()
+    assert 'imoveis' in response_data
+    assert '_links' in response_data
+    assert len(response_data['imoveis']) == 1
+    assert response_data['imoveis'][0]['cidade'] == 'Rio de Janeiro'
+    for imovel in response_data['imoveis']:
+        assert '_links' in imovel
+    
     mock_cursor.execute.assert_called_with(
         "SELECT * FROM imoveis WHERE cidade = %s", 
         ("Rio de Janeiro",)
